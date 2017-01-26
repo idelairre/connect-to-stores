@@ -4,6 +4,7 @@ import React from 'react/addons'
 import connectToStores from '../'
 import { assert } from 'chai'
 import sinon from 'sinon'
+import 'babel-polyfill';
 
 const { TestUtils } = React.addons
 
@@ -222,6 +223,30 @@ export default {
         <WrappedComponent />
       )
       assert(componentDidConnect === true)
+    },
+
+    'static properties are preserved '() {
+      class ClassComponent extends React.Component {
+        static staticProps = {
+          test: 'foo'
+        }
+
+        render() {
+          return <span foo={ClassComponent.staticProps.test} />
+        }
+      }
+      const WrappedComponent = connectToStores({
+        getStores() {
+          return [testStore]
+        },
+        getPropsFromStores(props) {
+          return testStore.getState()
+        }
+      }, ClassComponent)
+      const node = TestUtils.renderIntoDocument(
+        <WrappedComponent />
+      )
+      assert(WrappedComponent.staticProps.test === 'foo')
     },
 
     'Component receives all updates'(done) {
